@@ -22,26 +22,83 @@ A stub SFTP server for loopback SFTP testing.
 
 import os
 from paramiko import ServerInterface, SFTPServerInterface, SFTPServer, SFTPAttributes, \
-    SFTPHandle, SFTP_OK, AUTH_SUCCESSFUL, OPEN_SUCCEEDED
+    SFTPHandle, SFTP_OK, AUTH_SUCCESSFUL, OPEN_SUCCEEDED, AUTH_FAILED
 
 
-class StubServer (ServerInterface):
+
+#Username and Password
+USERNAME = 'admin'
+PASSWD = 'admin'
+#ROOT = getattr(ROOT, "ROOT", os.getcwd())
+
+
+
+class StubServer(ServerInterface):
+
     def check_auth_password(self, username, password):
-        # all are allowed
+        """
+        Override method check_auth_password to verify authentication.
+        Check here for correct username and password.
+        username - username to be authenticated
+        password - the passwrod for this username to be checked.
+        return AUTH_SUCCESSFUL or AUTH_FAILED
+        """
         return AUTH_SUCCESSFUL
-
+        
     def check_channel_request(self, kind, chanid):
+        """
+        Override method check_channel_request to verify channel and kind.
+        Here we do not check for kind or chanid so just return OPEN_SUCCEEDED
+        kind - normally it is 'session'
+        chanid - paramiko channel id
         return OPEN_SUCCEEDED
+        """
+        return OPEN_SUCCEEDED
+
+		
+class AuthenticationStubServer(StubServer):
+    """
+    class AuthenticationStubServer - inherits from StubServer
+	This class manages a sftp server with authentication
+	check_auth_password method is overridden
+    """
+	
+	
+	def check_auth_password(self, username, password):
+        """
+        This method verifies authentication.
+        Check here for correct USERNAME and PASSWORD
+        username - username to be authenticated
+        password - the passwrod for this username to be checked.
+        return AUTH_SUCCESSFUL or AUTH_FAILED
+        """
+        if username == USERNAME and password == PASSWD:
+            return AUTH_SUCCESSFUL
+        else:
+            return AUTH_FAILED
+
+
+
 
 
 class StubSFTPHandle (SFTPHandle):
+
     def stat(self):
+        """
+        This method performs the stat attributes
+        return path SFTPAttributes or error
+        """
         try:
             return SFTPAttributes.from_stat(os.fstat(self.readfile.fileno()))
         except OSError, e:
             return SFTPServer.convert_errno(e.errno)
 
     def chattr(self, attr):
+        """
+        This method performs the stat attributes for the given path
+        path - file/folder path
+        return path SFTPAttributes or error
+        """
         # python doesn't have equivalents to fchown or fchmod, so we have to
         # use the stored filename
         try:
@@ -60,6 +117,11 @@ class StubSFTPServer (SFTPServerInterface):
         return self.ROOT + self.canonicalize(path)
 
     def list_folder(self, path):
+        """
+        This method returns the list folder given a path
+        path - path to folder
+        return a list of folders
+        """
         path = self._realpath(path)
         try:
             out = [ ]
@@ -73,6 +135,11 @@ class StubSFTPServer (SFTPServerInterface):
             return SFTPServer.convert_errno(e.errno)
 
     def stat(self, path):
+        """
+        This method performs the stat attributes for the given path
+        path - file/folder path
+        return path SFTPAttributes or error
+        """
         path = self._realpath(path)
         try:
             return SFTPAttributes.from_stat(os.stat(path))
@@ -80,6 +147,11 @@ class StubSFTPServer (SFTPServerInterface):
             return SFTPServer.convert_errno(e.errno)
 
     def lstat(self, path):
+        """
+        This method performs the lstat attributes for the given path
+        path - file/folder path
+        return lstat SFTPAttributes or error
+        """
         path = self._realpath(path)
         try:
             return SFTPAttributes.from_stat(os.lstat(path))
@@ -87,6 +159,13 @@ class StubSFTPServer (SFTPServerInterface):
             return SFTPServer.convert_errno(e.errno)
 
     def open(self, path, flags, attr):
+        """
+        This method returns the list folder given a path
+        path - path to folder
+        flags - file flags
+        attr -  file attributes
+        return a file object
+        """
         path = self._realpath(path)
         try:
             binary_flag = getattr(os, 'O_BINARY',  0)
@@ -127,6 +206,11 @@ class StubSFTPServer (SFTPServerInterface):
         return fobj
 
     def remove(self, path):
+        """
+        This method deletes the given path to file
+        path - file path
+        return  SFTP_OK or error
+        """
         path = self._realpath(path)
         try:
             os.remove(path)
@@ -135,6 +219,12 @@ class StubSFTPServer (SFTPServerInterface):
         return SFTP_OK
 
     def rename(self, oldpath, newpath):
+        """
+        This method renames oldpath into newpath
+        oldpath - old file path
+        newpath - new file path
+        return  SFTP_OK or error
+        """
         oldpath = self._realpath(oldpath)
         newpath = self._realpath(newpath)
         try:
@@ -144,6 +234,12 @@ class StubSFTPServer (SFTPServerInterface):
         return SFTP_OK
 
     def mkdir(self, path, attr):
+        """
+        This method creates a dir path with passed attributes
+        path - folder path to be created
+        attr - attributes
+        return  SFTP_OK or error
+        """
         path = self._realpath(path)
         try:
             os.mkdir(path)
@@ -154,6 +250,11 @@ class StubSFTPServer (SFTPServerInterface):
         return SFTP_OK
 
     def rmdir(self, path):
+        """
+        This method deletes the given folder
+        path - folder path to be deleted
+        return  SFTP_OK or error
+        """
         path = self._realpath(path)
         try:
             os.rmdir(path)
@@ -162,6 +263,12 @@ class StubSFTPServer (SFTPServerInterface):
         return SFTP_OK
 
     def chattr(self, path, attr):
+        """
+        This method changes the attributes of a given path
+        path - the path
+        attr - file attributes to be set
+        return  SFTP_OK or error
+        """
         path = self._realpath(path)
         try:
             SFTPServer.set_file_attr(path, attr)
@@ -170,6 +277,12 @@ class StubSFTPServer (SFTPServerInterface):
         return SFTP_OK
 
     def symlink(self, target_path, path):
+        """
+        This method manages symbolic links.
+        target_path - the symbolic link path
+        path - original path
+        return  SFTP_OK or error
+        """
         path = self._realpath(path)
         if (len(target_path) > 0) and (target_path[0] == '/'):
             # absolute symlink
@@ -190,6 +303,11 @@ class StubSFTPServer (SFTPServerInterface):
         return SFTP_OK
 
     def readlink(self, path):
+        """
+        This method reads symbolic links.
+        path - path to be read
+        return SFTP_OK or error
+        """
         path = self._realpath(path)
         try:
             symlink = os.readlink(path)

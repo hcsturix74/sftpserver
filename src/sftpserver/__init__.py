@@ -32,13 +32,13 @@ import textwrap
 
 import paramiko
 
-from sftpserver.stub_sftp import StubServer, StubSFTPServer
+from sftpserver.stub_sftp import StubServer, StubSFTPServer, AuthenticationStubServer
 
 HOST, PORT = 'localhost', 3373
 BACKLOG = 10
 
 
-def start_server(host, port, keyfile, level):
+def start_server(host, port, keyfile, level, auth):
     paramiko_level = getattr(paramiko.common, level)
     paramiko.common.logging.basicConfig(level=paramiko_level)
 
@@ -55,8 +55,10 @@ def start_server(host, port, keyfile, level):
         transport.add_server_key(host_key)
         transport.set_subsystem_handler(
             'sftp', paramiko.SFTPServer, StubSFTPServer)
-
-        server = StubServer()
+		if auth:
+		    server = AuthenticationStubServer()
+		else:
+            server = StubServer()
         transport.start_server(server=server)
 
         channel = transport.accept()
@@ -85,14 +87,17 @@ def main():
         '-k', '--keyfile', dest='keyfile', metavar='FILE',
         help='Path to private key, for example /tmp/test_rsa.key'
         )
-
+	parser.add_option(
+        '-a', '--auth', dest='auth', action="store_true", default=False,
+        help='Enable authentication on server'
+        )
     options, args = parser.parse_args()
 
     if options.keyfile is None:
         parser.print_help()
         sys.exit(-1)
 
-    start_server(options.host, options.port, options.keyfile, options.level)
+    start_server(options.host, options.port, options.keyfile, options.level, options.auth)
 
 
 if __name__ == '__main__':
