@@ -60,8 +60,8 @@ class StubServer(ServerInterface):
 class AuthenticationStubServer(StubServer):
     """
     class AuthenticationStubServer - inherits from StubServer
-	This class manages a sftp server with authentication
-	check_auth_password method is overridden
+    This class manages a sftp server with authentication
+    check_auth_password method is overridden
     """
     
     def check_auth_password(self, username, password):
