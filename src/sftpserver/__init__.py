@@ -55,10 +55,11 @@ def start_server(host, port, keyfile, level, auth):
         transport.add_server_key(host_key)
         transport.set_subsystem_handler(
             'sftp', paramiko.SFTPServer, StubSFTPServer)
-		if auth:
-		    server = AuthenticationStubServer()
-		else:
+        if auth:
+            server = AuthenticationStubServer()
+        else:
             server = StubServer()
+
         transport.start_server(server=server)
 
         channel = transport.accept()
@@ -87,10 +88,11 @@ def main():
         '-k', '--keyfile', dest='keyfile', metavar='FILE',
         help='Path to private key, for example /tmp/test_rsa.key'
         )
-	parser.add_option(
+    parser.add_option(
         '-a', '--auth', dest='auth', action="store_true", default=False,
         help='Enable authentication on server'
-        )
+    )
+
     options, args = parser.parse_args()
 
     if options.keyfile is None:

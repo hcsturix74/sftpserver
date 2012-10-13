@@ -55,16 +55,16 @@ class StubServer(ServerInterface):
         """
         return OPEN_SUCCEEDED
 
-		
+
+
 class AuthenticationStubServer(StubServer):
     """
     class AuthenticationStubServer - inherits from StubServer
 	This class manages a sftp server with authentication
 	check_auth_password method is overridden
     """
-	
-	
-	def check_auth_password(self, username, password):
+    
+    def check_auth_password(self, username, password):
         """
         This method verifies authentication.
         Check here for correct USERNAME and PASSWORD
