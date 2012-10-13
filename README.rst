@@ -33,7 +33,7 @@ Examples
                             Debug level: WARNING, INFO, DEBUG [default: INFO]
       -k FILE, --keyfile=FILE
                             Path to private key, for example /tmp/test_rsa.key
-	  -a, --auth            Enable authentication on server [default: False]
+      -a, --auth            enable authentication on server [default: False]
 
     $ sftpserver -k /tmp/test_rsa.key -l DEBUG
 
