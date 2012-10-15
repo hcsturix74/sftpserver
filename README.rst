@@ -7,6 +7,17 @@ Paramiko's SFTPServer.
 I needed a simple server that could be used as a stub for testing
 Python SFTP clients so I whipped out one.
 
+
+Updates/Changes
+------------
+
+* Now works also with authentication:
+
+Note: USERNAME and PASSWORD are constants in stub_sftp.py file
+
+* Now works also in IPv6
+
+
 Installation
 ------------
 
@@ -34,6 +45,7 @@ Examples
       -k FILE, --keyfile=FILE
                             Path to private key, for example /tmp/test_rsa.key
       -a, --auth            enable authentication on server [default: False]
+      --ipv6                IPv6 addresses on interfaces [default: False]
 
     $ sftpserver -k /tmp/test_rsa.key -l DEBUG
 
